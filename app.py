@@ -2,6 +2,7 @@ import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import OperationalError
+from sqlalchemy import text # Thêm thư viện 'text' để chạy raw SQL
 
 # Khởi tạo ứng dụng Flask
 # Vercel sẽ tự động tìm biến tên 'app' này
@@ -49,12 +50,17 @@ def test_db():
     try:
         # Sử dụng app_context để đảm bảo SQLAlchemy hoạt động
         with app.app_context():
-            # 1. XÓA TẤT CẢ CÁC BẢNG (Theo yêu cầu)
+            # 1. XÓA SẠCH SCHEMA (Theo yêu cầu)
             # Cảnh báo: Chỉ dùng cho test. Lệnh này sẽ xóa sạch dữ liệu.
-            db.drop_all()
-            output_html += "<p style='color: orange;'><b>Cảnh báo:</b> Đã chạy db.drop_all() - Xóa tất cả bảng.</p>"
+            # Dùng raw SQL "DROP SCHEMA" để gỡ bỏ mọi thứ,
+            # giải quyết lỗi "DependentObjectsStillExist" (như log lỗi đã báo)
+            db.session.execute(text("DROP SCHEMA public CASCADE;"))
+            db.session.execute(text("CREATE SCHEMA public;"))
+            db.session.commit() # Cần commit sau khi thực thi DDL (Data Definition Language)
+            output_html += "<p style='color: orange;'><b>Cảnh báo:</b> Đã chạy 'DROP SCHEMA public CASCADE' - Xóa sạch database.</p>"
 
             # 2. Tạo bảng (nếu chưa tồn tại)
+            # Bây giờ db trống rỗng, create_all sẽ chạy mượt
             db.create_all()
             output_html += "<p>Đã chạy db.create_all() - Tạo lại bảng 'users' thành công.</p>"
 
