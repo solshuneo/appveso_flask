@@ -49,11 +49,17 @@ def test_db():
     try:
         # Sử dụng app_context để đảm bảo SQLAlchemy hoạt động
         with app.app_context():
-            # 1. Tạo bảng (nếu chưa tồn tại)
-            db.create_all()
-            output_html += "<p>Đã kiểm tra/tạo bảng 'users' thành công.</p>"
+            # 1. XÓA TẤT CẢ CÁC BẢNG (Theo yêu cầu)
+            # Cảnh báo: Chỉ dùng cho test. Lệnh này sẽ xóa sạch dữ liệu.
+            db.drop_all()
+            output_html += "<p style='color: orange;'><b>Cảnh báo:</b> Đã chạy db.drop_all() - Xóa tất cả bảng.</p>"
 
-            # 2. Thêm dữ liệu (chỉ thêm nếu bảng rỗng)
+            # 2. Tạo bảng (nếu chưa tồn tại)
+            db.create_all()
+            output_html += "<p>Đã chạy db.create_all() - Tạo lại bảng 'users' thành công.</p>"
+
+            # 3. Thêm dữ liệu (chỉ thêm nếu bảng rỗng)
+            # Vì ta vừa drop_all nên bảng sẽ luôn rỗng ở bước này
             if User.query.count() == 0:
                 output_html += "<p>Bảng rỗng. Đang thêm user mẫu...</p>"
                 sample_user = User(phone="0905123456", name="Test User Neon")
@@ -63,7 +69,7 @@ def test_db():
             else:
                 output_html += "<p>Bảng đã có dữ liệu, không thêm user mẫu.</p>"
 
-            # 3. Truy vấn và hiển thị dữ liệu
+            # 4. Truy vấn và hiển thị dữ liệu
             output_html += "<h2>Dữ liệu hiện tại trong bảng 'users':</h2>"
             all_users = User.query.all()
             
