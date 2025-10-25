@@ -10,9 +10,9 @@ app.config.from_object(Config)
 # Initialize database
 db.init_app(app)
 
-# Create tables
-with app.app_context():
-    db.create_all()
+# Create tables (only in production or when explicitly needed)
+# with app.app_context():
+#     db.create_all()
 
 @app.route('/')
 def home():
